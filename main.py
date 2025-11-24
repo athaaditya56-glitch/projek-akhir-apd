@@ -4,7 +4,7 @@
 from auth import login
 from admin import admin_menu
 from inventory import menu_inventory
-from pembeli import menu_pembeli, sales_history
+from pembeli import menu_pembeli
 
 def main():
     print("=== SISTEM PENJUALAN TOKO FURNITURE ===\n")

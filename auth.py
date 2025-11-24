@@ -4,7 +4,7 @@
 USERS = {
     "admin": {"password": "admin123", "role": "admin"},
     "inv": {"password": "inv123", "role": "inventory"},
-    "kasir": {"password": "kasir123", "role": "kasir"},
+    "pembeli": {"password": "pembeli123", "role": "pembeli"},
 }
 
 def login(max_attempts=3):
