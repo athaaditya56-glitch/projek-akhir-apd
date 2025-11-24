@@ -4,7 +4,7 @@
 from auth import login
 from admin import admin_menu
 from inventory import menu_inventory
-# from kasir import kasir_menu, sales_history
+from pembeli import menu_pembeli, sales_history
 
 def main():
     print("=== SISTEM PENJUALAN TOKO FURNITURE ===\n")
@@ -21,11 +21,10 @@ def main():
             admin_menu()
         elif role == "inventory":
             menu_inventory()
-        # elif role == "kasir":
-        #     # kasir_menu()
-        # else:
-        #     print("Role tidak dikenal.")
-
+        elif role == "pembeli":
+            menu_pembeli()
+        else:
+            print("Role tidak dikenal.")
         # setelah logout, kembali ke login
         print("\nLogout berhasil.\n")
 
