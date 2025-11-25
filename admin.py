@@ -44,16 +44,16 @@ def crud_user():
             continue
 
         if pilihan == "list":
-            list_user()
+            lihat_user()
         elif pilihan == "add":
-            add_user()
+            tambah_user()
         elif pilihan == "delete":
-            delete_user()
+            hapus_user()
         elif pilihan == "back":
             break
 
 
-def list_user():
+def lihat_user():
     print("\n=== DAFTAR USER ===")
     table = PrettyTable(["Username", "Role"])
     for u, info in USERS.items():
@@ -62,7 +62,7 @@ def list_user():
     print()
 
 
-def add_user():
+def tambah_user():
     print("\n=== TAMBAH USER ===")
     try:
         username = input("Username baru: ").strip()
@@ -85,7 +85,7 @@ def add_user():
     print("User berhasil ditambahkan.\n")
 
 
-def delete_user():
+def hapus_user():
     print("\n=== HAPUS USER ===")
     try:
         username = input("User yang ingin dihapus: ").strip()
