@@ -10,17 +10,25 @@ USERS = {
 def login(max_attempts=3):
     attempts = 0
     while attempts < max_attempts:
-        username = input("Username: ").strip()
-        password = input("Password: ").strip()
+        try:
+            try:
+                username = input("Username: ").strip()
+                password = input("Password: ").strip()
+            except KeyboardInterrupt:
+                print("\nInput dibatalkan.")
+                return None
 
-        user = USERS.get(username)
+            user = USERS.get(username)
 
-        if user and user["password"] == password:
-            print("Login berhasil!\n")
-            return {"username": username, "role": user["role"]}
+            if user and user["password"] == password:
+                print("Login berhasil!\n")
+                return {"username": username, "role": user["role"]}
 
-        attempts += 1
-        print(f"Login gagal. Percobaan {attempts}/{max_attempts}.\n")
+            attempts += 1
+            print(f"Login gagal. Percobaan {attempts}/{max_attempts}.\n")
+
+        except Exception as e:
+            print(f"Error saat login: {e}")
 
     print("Batas login tercapai. Aplikasi keluar.")
     return None

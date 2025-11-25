@@ -1,5 +1,5 @@
 # main.py
-# Integrasi semua modul CLI Sistem Penjualan Furniture
+# Integrasi semua modul
 
 from auth import login
 from admin import admin_menu
@@ -12,7 +12,7 @@ def main():
     while True:
         user = login()
         if not user:
-            print("Gagal login 3 kali. Program ditutup.")
+            print("Gagal login 3 kali. Program keluar.")
             break
 
         role = user["role"]
@@ -25,7 +25,7 @@ def main():
             menu_pembeli()
         else:
             print("Role tidak dikenal.")
-        # setelah logout, kembali ke login
+
         print("\nLogout berhasil.\n")
 
 if __name__ == "__main__":
