@@ -1,7 +1,3 @@
-# admin.py
-# Modul admin dengan CRUD user + try/except + konfirmasi hapus
-# Menggunakan PrettyTable dan Inquirer
-
 from auth import USERS
 from prettytable import PrettyTable
 import inquirer
@@ -30,11 +26,6 @@ def admin_menu():
             print("\nData penjualan belum diintegrasikan.\n")
         elif pilihan == "logout":
             break
-
-
-# ------------------------------
-# CRUD USER
-# ------------------------------
 
 def crud_user():
     while True:
