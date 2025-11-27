@@ -1,15 +1,19 @@
+import json
 from prettytable import PrettyTable
+import os
 
-inventory = {
-    "Dekorasi": [
-        {"nama": "Vas Bunga", "harga": 80000, "stok": 50},
-        {"nama": "Lukisan", "harga": 120000, "stok": 15}
-    ],
-    "Elektronik": [
-        {"nama": "Kipas Angin", "harga": 180000, "stok": 10},
-        {"nama": "Dispenser", "harga": 90000, "stok": 18}
-    ]
-}
+DATA_FILE = "data.json"
+
+def load_data():
+    if not os.path.exists(DATA_FILE):
+        return {"inventory": {}}
+
+    with open(DATA_FILE, "r") as f:
+        return json.load(f)
+
+def save_data(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f, indent=4)
 
 def input_tidak_kosong(pesan):
     while True:
@@ -22,7 +26,7 @@ def input_tidak_kosong(pesan):
 def format_rp(n):
     return f"{n:,}"
 
-def pilih_kategori(maksud="memilih"):
+def pilih_kategori(inventory, maksud="memilih"):
     if not inventory:
         print("Belum ada kategori.\n")
         return None
@@ -47,7 +51,9 @@ def pilih_kategori(maksud="memilih"):
 
     return kategori_list[nomor - 1]
 
-def lihat_daftar_barang():
+def lihat_daftar_barang(data):
+    inventory = data["inventory"]
+
     print("\n==== DAFTAR BARANG (PER KATEGORI) ====")
     if not inventory:
         print("Belum ada kategori.\n")
@@ -66,7 +72,9 @@ def lihat_daftar_barang():
         print(table)
     print()
 
-def tambah_kategori():
+def tambah_kategori(data):
+    inventory = data["inventory"]
+
     print("\n=== TAMBAH KATEGORI ===")
     nama = input_tidak_kosong("Nama kategori baru: ")
 
@@ -78,34 +86,36 @@ def tambah_kategori():
         return
 
     inventory[nama] = []
+    save_data(data)
     print(f"Kategori '{nama}' berhasil ditambahkan.\n")
 
-def hapus_kategori():
+def hapus_kategori(data):
+    inventory = data["inventory"]
+
     print("\n=== HAPUS KATEGORI ===")
-    kategori = pilih_kategori("dihapus")
+    kategori = pilih_kategori(inventory, "dihapus")
     if kategori is None:
         print("Batal menghapus kategori.\n")
         return
 
-    daftar = inventory[kategori]
-
-    if daftar:
-        confirm = input_tidak_kosong(f"Kategori '{kategori}' berisi barang. Hapus semua? (y/n): ").lower()
-        if confirm != "y":
-            print("Batal menghapus kategori.\n")
-            return
+    if inventory[kategori]:
+        confirm = input_tidak_kosong(f"Kategori '{kategori}' berisi barang. Hapus semua? (ya/tidak): ").lower()
     else:
-        confirm = input_tidak_kosong(f"Yakin ingin menghapus kategori '{kategori}'? (y/n): ").lower()
-        if confirm != "y":
-            print("Batal menghapus kategori.\n")
-            return
+        confirm = input_tidak_kosong(f"Yakin ingin menghapus kategori '{kategori}'? (ya/tidak): ").lower()
+
+    if confirm != "ya":
+        print("Batal menghapus kategori.\n")
+        return
 
     del inventory[kategori]
+    save_data(data)
     print(f"Kategori '{kategori}' berhasil dihapus.\n")
 
-def tambah_barang_baru():
+def tambah_barang_baru(data):
+    inventory = data["inventory"]
+
     print("\n=== TAMBAH BARANG BARU ===")
-    kategori = pilih_kategori("menambah barang ke")
+    kategori = pilih_kategori(inventory, "menambah barang ke")
     if kategori is None:
         print("Batal menambah barang.\n")
         return
@@ -115,26 +125,26 @@ def tambah_barang_baru():
         print("Nama barang harus huruf.\n")
         return
 
-    harga_input = input_tidak_kosong("Harga       : ")
-    stok_input = input_tidak_kosong("Stok        : ")
-
     try:
-        harga = int(harga_input)
-        stok = int(stok_input)
+        harga = int(input_tidak_kosong("Harga: "))
+        stok = int(input_tidak_kosong("Stok: "))
     except ValueError:
         print("Harga & stok harus angka.\n")
         return
 
     if harga <= 0 or stok < 0:
-        print("Harga harus >0 dan stok >=0.\n")
+        print("Harga harus >0 dan stok ≥ 0.\n")
         return
 
     inventory[kategori].append({"nama": nama, "harga": harga, "stok": stok})
+    save_data(data)
     print(f"Barang '{nama}' berhasil ditambahkan ke kategori '{kategori}'.\n")
 
-def tambah_stok():
+def tambah_stok(data):
+    inventory = data["inventory"]
+
     print("\n=== TAMBAH STOK BARANG ===")
-    kategori = pilih_kategori("menambah stok")
+    kategori = pilih_kategori(inventory, "menambah stok")
     if kategori is None:
         print("Batal.\n")
         return
@@ -150,9 +160,8 @@ def tambah_stok():
         table.add_row([i, barang["nama"], format_rp(barang["harga"]), barang["stok"]])
     print(table)
 
-    nomor_input = input_tidak_kosong("Pilih nomor barang: ")
     try:
-        nomor = int(nomor_input)
+        nomor = int(input_tidak_kosong("Pilih nomor barang: "))
     except ValueError:
         print("Input harus angka.\n")
         return
@@ -163,9 +172,8 @@ def tambah_stok():
 
     barang = daftar[nomor - 1]
 
-    tambahan_input = input_tidak_kosong(f"Tambah stok untuk '{barang['nama']}' sebanyak: ")
     try:
-        tambahan = int(tambahan_input)
+        tambahan = int(input_tidak_kosong("Tambah stok sebanyak: "))
     except ValueError:
         print("Input harus angka.\n")
         return
@@ -175,9 +183,12 @@ def tambah_stok():
         return
 
     barang["stok"] += tambahan
+    save_data(data)
     print(f"Stok baru '{barang['nama']}': {barang['stok']}\n")
 
 def menu_inventory():
+    data = load_data()
+
     while True:
         print("=== MENU INVENTORY ===")
         print("1. Lihat daftar barang")
@@ -190,38 +201,17 @@ def menu_inventory():
         pilihan = input_tidak_kosong("Masukkan pilihan (1-6): ")
 
         if pilihan == "1":
-            lihat_daftar_barang()
+            lihat_daftar_barang(data)
         elif pilihan == "2":
-            tambah_kategori()
+            tambah_kategori(data)
         elif pilihan == "3":
-            hapus_kategori()
+            hapus_kategori(data)
         elif pilihan == "4":
-            tambah_barang_baru()
+            tambah_barang_baru(data)
         elif pilihan == "5":
-            tambah_stok()
+            tambah_stok(data)
         elif pilihan == "6":
             print("Logout...\n")
             break
         else:
             print("Pilihan tidak valid.\n")
-
-def main():
-    while True:
-        print("=== PILIH ROLE ===")
-        role = input_tidak_kosong("Masukkan role (inventory) atau 'keluar': ").lower()
-
-        if role == "keluar":
-            print("Program selesai.")
-            break
-
-        if role == "inventory":
-            password = input_tidak_kosong("Masukkan password: ")
-            if password == "inv123":
-                print("Login berhasil!\n")
-                menu_inventory()
-            else:
-                print("Password salah!\n")
-        else:
-            print("Role tidak valid.\n")
-
-main()
