@@ -95,4 +95,4 @@ def menu_pembeli():
             print("Keluar dari menu pembeli.\n")
             break
         else:
-            print("Pilihan tidak valid.\n")
+            print("Pilihan tidak valid.\n")
