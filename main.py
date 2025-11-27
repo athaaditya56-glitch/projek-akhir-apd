@@ -1,33 +1,45 @@
-# main.py
-# Integrasi semua modul CLI Sistem Penjualan Furniture
-
 from auth import login
 from admin import admin_menu
-# from inventory import inventory_menu
-# from kasir import kasir_menu, sales_history
+from inventory import menu_inventory
+from pembeli import menu_pembeli
 
 def main():
     print("=== SISTEM PENJUALAN TOKO FURNITURE ===\n")
 
     while True:
-        user = login()
-        if not user:
-            print("Gagal login 3 kali. Program ditutup.")
+        print("Menu Utama")
+        print("1. Login")
+        print("2. Keluar")
+
+        pilihan = input("Pilih menu: ").strip()
+
+        if pilihan == "2":
+            print("Program selesai.")
             break
 
-        role = user["role"]
+        elif pilihan == "1":
+            user = login()
 
-        if role == "admin":
-            admin_menu()
-        # elif role == "inventory":
-        #     # inventory_menu()
-        # elif role == "kasir":
-        #     # kasir_menu()
-        # else:
-        #     print("Role tidak dikenal.")
+            if not user:
+                print("Sisa percobaan habis. Login gagal.\n")
+                continue
 
-        # setelah logout, kembali ke login
-        print("\nLogout berhasil.\n")
+            role = user["role"]
+
+            if role == "admin":
+                admin_menu()
+            elif role == "inventory":
+                menu_inventory()
+            elif role == "pembeli":
+                menu_pembeli()
+            else:
+                print("Ada yang error.\n")
+
+            print("Logout berhasil.\n")
+
+        else:
+            print("Pilihan tidak valid.\n")
+
 
 if __name__ == "__main__":
     main()
