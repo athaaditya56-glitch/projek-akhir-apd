@@ -1,4 +1,5 @@
 from auth import USERS
+from inventory import lihat_daftar_barang
 from prettytable import PrettyTable
 import inquirer
 
@@ -20,7 +21,7 @@ def admin_menu():
         if pilihan == "crud":
             crud_user()
         elif pilihan == "stok":
-            print("\nData stok belum diintegrasikan.\n")
+            lihat_daftar_barang()
         elif pilihan == "logout":
             break
 
