@@ -9,52 +9,64 @@ keranjang = []
 
 
 # ===============================
-# LOAD DATA
+# LOAD DATA (sesuai format INVENTORY)
 # ===============================
 def load_data():
     global barang
 
-    # Jika file belum ada → buat file baru dengan format benar
     if not os.path.exists(DATA_FILE):
-        default_data = {
-            "barang": [
-                {"id": 1, "nama": "Sofa", "harga": 3000000, "stok": 5, "kategori": "Ruang Tamu"},
-                {"id": 2, "nama": "Meja Tamu", "harga": 1500000, "stok": 4, "kategori": "Ruang Tamu"},
-                {"id": 3, "nama": "Lemari", "harga": 2000000, "stok": 3, "kategori": "Kamar Tidur"},
-            ]
-        }
+        # jika tidak ada file → buat file inventory kosong
+        default_data = {"inventory": {}}
         with open(DATA_FILE, "w", encoding="utf-8") as f:
             json.dump(default_data, f, indent=4, ensure_ascii=False)
-        
-        barang = default_data["barang"].copy()
+        barang = []
         return
 
-    # Jika file ada → baca isinya
     try:
         with open(DATA_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
 
-        # Validasi format
-        if isinstance(data, dict) and "barang" in data and isinstance(data["barang"], list):
-            barang = data["barang"].copy()
-        else:
-            raise ValueError("FORMAT DATA SALAH")
+        if not isinstance(data, dict) or "inventory" not in data:
+            raise ValueError("FORMAT FILE SALAH")
+
+        # ubah dari bentuk kategori menjadi list tunggal
+        barang = []
+        for kategori, items in data["inventory"].items():
+            for item in items:
+                # tambahkan kategori ke item
+                item_copy = item.copy()
+                item_copy["kategori"] = kategori
+                barang.append(item_copy)
 
     except Exception:
-        # Jika file rusak → reset default minimal
-        default_data = {"barang": []}
-        with open(DATA_FILE, "w", encoding="utf-8") as f:
-            json.dump(default_data, f, indent=4, ensure_ascii=False)
-        barang = []
         print("File data.json rusak → dibuat ulang.")
+        with open(DATA_FILE, "w", encoding="utf-8") as f:
+            json.dump({"inventory": {}}, f, indent=4, ensure_ascii=False)
+        barang = []
 
 
 # ===============================
-# SAVE DATA
+# SAVE DATA (kembalikan ke format INVENTORY)
 # ===============================
 def save_data():
+    invent = {}
+
+    for b in barang:
+        kategori = b["kategori"]
+        if kategori not in invent:
+            invent[kategori] = []
+
+        # buang id jika tidak perlu, atau gunakan jika ingin
+        item_simpan = {
+            "nama": b["nama"],
+            "harga": b["harga"],
+            "stok": b["stok"]
+        }
+
+        invent[kategori].append(item_simpan)
+
     with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump({"barang": barang}, f, indent=4, ensure_ascii=False)
+        json.dump({"inventory": invent}, f, indent=4, ensure_ascii=False)
 
 
 # ===============================
@@ -66,8 +78,8 @@ def tampil_barang():
         print("Belum ada barang.")
         return
 
-    for b in barang:
-        print(f"{b['id']}. {b['nama']} ({b['kategori']}) - Rp{b['harga']} | Stok: {b['stok']}")
+    for i, b in enumerate(barang, start=1):
+        print(f"{i}. {b['nama']} ({b['kategori']}) - Rp{b['harga']} | Stok: {b['stok']}")
     print()
 
 
@@ -90,35 +102,34 @@ def tambah_barang():
     tampil_barang()
 
     try:
-        id_barang = int(input("Masukkan no barang: "))
+        nomor = int(input("Masukkan nomor barang: "))
         jumlah = int(input("Masukkan jumlah: "))
     except:
         print("Input harus angka.")
         return
 
-    # Cari barang
-    barang_ditemukan = next((b for b in barang if b["id"] == id_barang), None)
-
-    if barang_ditemukan is None:
-        print("Barang tidak ditemukan.")
+    if not (1 <= nomor <= len(barang)):
+        print("Nomor tidak valid.")
         return
+
+    barang_ditemukan = barang[nomor - 1]
 
     if jumlah > barang_ditemukan["stok"]:
         print("Stok tidak cukup.")
         return
 
     keranjang.append({
-        "id": barang_ditemukan["id"],
         "nama": barang_ditemukan["nama"],
         "harga": barang_ditemukan["harga"],
-        "jumlah": jumlah
+        "jumlah": jumlah,
+        "kategori": barang_ditemukan["kategori"]
     })
 
     print("Barang berhasil ditambahkan.")
 
 
 # ===============================
-# UBAH JUMLAH BARANG
+# UBAH JUMLAH
 # ===============================
 def ubah_jumlah():
     print("\n UBAH JUMLAH BARANG ")
@@ -140,7 +151,11 @@ def ubah_jumlah():
 
     item = keranjang[nomor - 1]
 
-    barang_asli = next((b for b in barang if b["id"] == item["id"]), None)
+    # cari barang asli
+    barang_asli = next(
+        (b for b in barang if b["nama"] == item["nama"] and b["kategori"] == item["kategori"]),
+        None
+    )
 
     if barang_asli is None:
         print("Barang asli tidak ditemukan.")
@@ -188,9 +203,12 @@ def checkout():
         print("Keranjang kosong.")
         return
 
-    # Cek stok dulu
+    # cek stok
     for item in keranjang:
-        b = next((x for x in barang if x["id"] == item["id"]), None)
+        b = next(
+            (x for x in barang if x["nama"] == item["nama"] and x["kategori"] == item["kategori"]),
+            None
+        )
         if b is None:
             print(f"Barang {item['nama']} tidak ditemukan.")
             return
@@ -198,16 +216,16 @@ def checkout():
             print(f"Stok tidak cukup untuk {item['nama']}.")
             return
 
-    # Kurangi stok
+    # kurangi stok
     for item in keranjang:
         for b in barang:
-            if b["id"] == item["id"]:
+            if b["nama"] == item["nama"] and b["kategori"] == item["kategori"]:
                 b["stok"] -= item["jumlah"]
                 break
 
     save_data()
 
-    # Tampilkan nota
+    # nota
     print("\n NOTA PEMBELIAN ")
     table = PrettyTable()
     table.field_names = ["No", "Nama", "Harga", "Jumlah", "Subtotal"]
@@ -226,7 +244,7 @@ def checkout():
 
 
 # ===============================
-# MENU UTAMA
+# MENU UTAMA (7 MENU)
 # ===============================
 def menu_pembeli():
     while True:
@@ -260,5 +278,4 @@ def menu_pembeli():
             print("Pilihan tidak valid.")
 
 
-# Load data saat import
 load_data()
